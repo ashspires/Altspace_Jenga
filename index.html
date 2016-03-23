@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+
+<html lang=en>
+	<head>
+		<meta charset=utf-8>
+		<title>Altspace Jenga</title>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r72/three.js"></script>
+		<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+		<script src="https://sdk.altvr.com/libs/three.js/r73/build/three.js"></script>
+		<script src="dist/cannon.js"></script>
+		<script src="dist/altspace.min.js"></script>
+		<script src="https://sdk.altvr.com/libs/three.js/r73/examples/js/loaders/MTLLoader.js"></script>
+		<script src="dist/firebase.js"></script>
+	</head>
+	<body>
+		<script>
+			
+console.log("start");
+
+var utilities = altspace.utilities;
+var behaviors = altspace.utilities.behaviors;
+var sim = utilities.Simulation();
+var world;
+var timeStep = 1/60;
+var client = "slave";
+var boxsel;
+var selectedbox;
+var selectedbody;
+var layers = 6;
+var boxname = 1;
+var height = -472;
+var oldheight;
+var localmove;
+var spaceid;
+var userid;
+var fbref;
+var myFirebaseRef = new Firebase("https://blinding-fire-3702.firebaseio.com");
+
+// Initialise Firebase Session
+
+altspace.getUser().then(function (user) {
+	console.log(user.userId);
+	userid = user.userId;
+
+altspace.getSpace().then(function (space) {
+	spaceid = space.sid;
+	fbref = myFirebaseRef.child(spaceid);
+
+console.log(spaceid);
+
+// Firebase Refrences
+var fbboxsel = fbref.child('boxsel');
+var fbbox1 = fbref.child('box1');
+var fbbox2 = fbref.child('box2');
+var fbbox3 = fbref.child('box3');
+var fbbox4 = fbref.child('box4');
+var fbbox5 = fbref.child('box5');
+var fbbox6 = fbref.child('box6');
+var fbbox7 = fbref.child('box7');
+var fbbox8 = fbref.child('box8');
+var fbbox9 = fbref.child('box9');
+var fbbox10 = fbref.child('box10');
+var fbbox11 = fbref.child('box11');
+var fbbox12 = fbref.child('box12');
+var fbbox13 = fbref.child('box13');
+var fbbox14 = fbref.child('box14');
+var fbbox15 = fbref.child('box15');
+var fbbox16 = fbref.child('box16');
+var fbbox17 = fbref.child('box17');
+var fbbox18 = fbref.child('box18');
+var fbbox19 = fbref.child('box19');
+var fbbox20 = fbref.child('box20');
+var fbbox21 = fbref.child('box21');
+var fbbox22 = fbref.child('box22');
+var fbbox23 = fbref.child('box23');
+var fbbox24 = fbref.child('box24');
+var fbbox25 = fbref.child('box25');
+var fbbox26 = fbref.child('box26');
+var fbbox27 = fbref.child('box27');
+var fbbox28 = fbref.child('box28');
+var fbbox29 = fbref.child('box29');
+var fbbox30 = fbref.child('box30');
+var fbbox31 = fbref.child('box31');
+var fbbox32 = fbref.child('box32');
+var fbbox33 = fbref.child('box33');
+var fbbox34 = fbref.child('box34');
+var fbbox35 = fbref.child('box35');
+var fbbox36 = fbref.child('box36');
+
+// Firebase First Check
+var gamestate = fbref.child('gamestate');
+
+if(gamestate == true){
+	client = "slave";
+}
+else if( gamestate == false){
+	client = "null";
+}
+else {
+	client = "slave";
+	gamestate.set(false);
+	fbboxsel.set({ initiator: "null" });
+}
+
+initCannon();
+
+// Load Materials
+
+var materialCreator = new THREE.MTLLoader.MaterialCreator();
+var url = 'images/wood.jpg';
+var url2 = 'images/refresh_icon_sq.png';
+var texture = materialCreator.loadTexture(url);
+var button_texture = materialCreator.loadTexture(url2);
+
+//Add THREE.JS Objects
+for (i = 0; i < layers; i++) {
+	
+	var initbox1 = new THREE.Mesh(
+    	new THREE.BoxGeometry(300, 50, 100),
+    	new THREE.MeshBasicMaterial({ map: texture })
+	);
+	var initbox2 = new THREE.Mesh(
+    	new THREE.BoxGeometry(300, 50, 100),
+		new THREE.MeshBasicMaterial({ map: texture })
+	);
+	var initbox3 = new THREE.Mesh(
+    	new THREE.BoxGeometry(300, 50, 100),
+		new THREE.MeshBasicMaterial({ map: texture })
+	);
+	var initbox4 = new THREE.Mesh(
+    	new THREE.BoxGeometry(300, 50, 100),
+		new THREE.MeshBasicMaterial({ map: texture })
+	);
+	var initbox5 = new THREE.Mesh(
+    	new THREE.BoxGeometry(300, 50, 100),
+		new THREE.MeshBasicMaterial({ map: texture })
+	);
+	var initbox6 = new THREE.Mesh(
+    	new THREE.BoxGeometry(300, 50, 100),
+		new THREE.MeshBasicMaterial({ map: texture })
+	);
+
+	initbox1.name = "box" + String(boxname);
+	boxname++;
+	initbox2.name = "box" + String(boxname);
+	boxname++;
+	initbox3.name = "box" + String(boxname);
+	boxname++;
+	initbox4.name = "box" + String(boxname);
+	boxname++;
+	initbox5.name = "box" + String(boxname);
+	boxname++;
+	initbox6.name = "box" + String(boxname);
+	boxname++;
+	
+	initbox1.addBehaviors(
+		behaviors.Drag({x: true, z: true})
+	);
+	initbox2.addBehaviors(
+		behaviors.Drag({x: true, z: true})
+	);
+	initbox3.addBehaviors(
+		behaviors.Drag({x: true, z: true})
+	);
+	initbox4.addBehaviors(
+		behaviors.Drag({x: true, z: true})
+	);
+	initbox5.addBehaviors(
+		behaviors.Drag({x: true, z: true})
+	);
+	initbox6.addBehaviors(
+		behaviors.Drag({x: true, z: true})
+	);
+	
+	initbox1.position.set(0, height, -110);
+	initbox2.position.set(0, height, 0);
+	initbox3.position.set(0, height, 110);
+	initbox4.position.set(-110, height + 50, 0);
+	initbox5.position.set(0, height + 50, 0);
+	initbox6.position.set(110, height + 50, 0);
+	oldheight = height;
+	height = oldheight + 100;
+	initbox1.rotation.x = 0;
+	initbox2.rotation.x = 0;
+	initbox3.rotation.x = 0;
+	initbox4.rotation.y = Math.PI / 2;
+	initbox5.rotation.y = Math.PI / 2;
+	initbox6.rotation.y = Math.PI / 2;
+	  
+	sim.scene.add(initbox1);
+	sim.scene.add(initbox2);
+	sim.scene.add(initbox3);
+	sim.scene.add(initbox4);
+	sim.scene.add(initbox5);
+	sim.scene.add(initbox6);
+}
+
+var box1 = sim.scene.getObjectByName("box1");
+var box2 = sim.scene.getObjectByName("box2");
+var box3 = sim.scene.getObjectByName("box3");
+var box4 = sim.scene.getObjectByName("box4");
+var box5 = sim.scene.getObjectByName("box5");
+var box6 = sim.scene.getObjectByName("box6");
+var box7 = sim.scene.getObjectByName("box7");
+var box8 = sim.scene.getObjectByName("box8");
+var box9 = sim.scene.getObjectByName("box9");
+var box10 = sim.scene.getObjectByName("box10");
+var box11 = sim.scene.getObjectByName("box11");
+var box12 = sim.scene.getObjectByName("box12");
+var box13 = sim.scene.getObjectByName("box13");
+var box14 = sim.scene.getObjectByName("box14");
+var box15 = sim.scene.getObjectByName("box15");
+var box16 = sim.scene.getObjectByName("box16");
+var box17 = sim.scene.getObjectByName("box17");
+var box18 = sim.scene.getObjectByName("box18");
+var box19 = sim.scene.getObjectByName("box19");
+var box20 = sim.scene.getObjectByName("box20");
+var box21 = sim.scene.getObjectByName("box21");
+var box22 = sim.scene.getObjectByName("box22");
+var box23 = sim.scene.getObjectByName("box23");
+var box24 = sim.scene.getObjectByName("box24");
+var box25 = sim.scene.getObjectByName("box25");
+var box26 = sim.scene.getObjectByName("box26");
+var box27 = sim.scene.getObjectByName("box27");
+var box28 = sim.scene.getObjectByName("box28");
+var box29 = sim.scene.getObjectByName("box29");
+var box30 = sim.scene.getObjectByName("box30");
+var box31 = sim.scene.getObjectByName("box31");
+var box32 = sim.scene.getObjectByName("box32");
+var box33 = sim.scene.getObjectByName("box33");
+var box34 = sim.scene.getObjectByName("box34");
+var box35 = sim.scene.getObjectByName("box35");
+var box36 = sim.scene.getObjectByName("box36");
+
+bodybox1.position.copy(box1.position);
+bodybox2.position.copy(box2.position);
+bodybox3.position.copy(box3.position);
+bodybox4.position.copy(box4.position);
+bodybox5.position.copy(box5.position);
+bodybox6.position.copy(box6.position);
+bodybox7.position.copy(box7.position);
+bodybox8.position.copy(box8.position);
+bodybox9.position.copy(box9.position);
+bodybox10.position.copy(box10.position);
+bodybox11.position.copy(box11.position);
+bodybox12.position.copy(box12.position);
+bodybox13.position.copy(box13.position);
+bodybox14.position.copy(box14.position);
+bodybox15.position.copy(box15.position);
+bodybox16.position.copy(box16.position);
+bodybox17.position.copy(box17.position);
+bodybox18.position.copy(box18.position);
+bodybox19.position.copy(box19.position);
+bodybox20.position.copy(box20.position);
+bodybox21.position.copy(box21.position);
+bodybox22.position.copy(box22.position);
+bodybox23.position.copy(box23.position);
+bodybox24.position.copy(box24.position);
+bodybox25.position.copy(box25.position);
+bodybox26.position.copy(box26.position);
+bodybox27.position.copy(box27.position);
+bodybox28.position.copy(box28.position);
+bodybox29.position.copy(box29.position);
+bodybox30.position.copy(box30.position);
+bodybox31.position.copy(box31.position);
+bodybox32.position.copy(box32.position);
+bodybox33.position.copy(box33.position);
+bodybox34.position.copy(box34.position);
+bodybox35.position.copy(box35.position);
+bodybox36.position.copy(box36.position);
+bodybox1.quaternion.copy(box1.quaternion);
+bodybox2.quaternion.copy(box2.quaternion);
+bodybox3.quaternion.copy(box3.quaternion);
+bodybox4.quaternion.copy(box4.quaternion);
+bodybox5.quaternion.copy(box5.quaternion);
+bodybox6.quaternion.copy(box6.quaternion);
+bodybox7.quaternion.copy(box7.quaternion);
+bodybox8.quaternion.copy(box8.quaternion);
+bodybox9.quaternion.copy(box9.quaternion);
+bodybox10.quaternion.copy(box10.quaternion);
+bodybox11.quaternion.copy(box11.quaternion);
+bodybox12.quaternion.copy(box12.quaternion);
+bodybox13.quaternion.copy(box13.quaternion);
+bodybox14.quaternion.copy(box14.quaternion);
+bodybox15.quaternion.copy(box15.quaternion);
+bodybox16.quaternion.copy(box16.quaternion);
+bodybox17.quaternion.copy(box17.quaternion);
+bodybox18.quaternion.copy(box18.quaternion);
+bodybox19.quaternion.copy(box19.quaternion);
+bodybox20.quaternion.copy(box20.quaternion);
+bodybox21.quaternion.copy(box21.quaternion);
+bodybox22.quaternion.copy(box22.quaternion);
+bodybox23.quaternion.copy(box23.quaternion);
+bodybox24.quaternion.copy(box24.quaternion);
+bodybox25.quaternion.copy(box25.quaternion);
+bodybox26.quaternion.copy(box26.quaternion);
+bodybox27.quaternion.copy(box27.quaternion);
+bodybox28.quaternion.copy(box28.quaternion);
+bodybox29.quaternion.copy(box29.quaternion);
+bodybox30.quaternion.copy(box30.quaternion);
+bodybox31.quaternion.copy(box31.quaternion);
+bodybox32.quaternion.copy(box32.quaternion);
+bodybox33.quaternion.copy(box33.quaternion);
+bodybox34.quaternion.copy(box34.quaternion);
+bodybox35.quaternion.copy(box35.quaternion);
+bodybox36.quaternion.copy(box36.quaternion);
+
+var floor = new THREE.Mesh(
+	new THREE.BoxGeometry(1000, 2, 1000),
+	new THREE.MeshBasicMaterial({ color: new THREE.Color("rgb(0, 255, 0)") })
+);
+
+var button = new THREE.Mesh(
+    	new THREE.BoxGeometry( 100, 100, 1 ),
+    	new THREE.MeshBasicMaterial({ map: button_texture })
+	);
+	
+button.position.y = 500;
+
+sim.scene.add(button);
+
+//sim.scene.add(floor);
+
+// Setup Cannon Physics
+
+function initCannon() {
+    world = new CANNON.World();
+    world.gravity.set(0,-60,0);
+    world.broadphase = new CANNON.NaiveBroadphase();
+    world.solver.iterations = 10;
+    
+    ground = new CANNON.Box(new CANNON.Vec3(500,1,500));
+    groundbody = new CANNON.Body({
+	    mass: 0,
+	    position: new CANNON.Vec3(0, -500, 0)
+    });
+    groundbody.addShape(ground);
+    world.addBody(groundbody);
+    
+    shape = new CANNON.Box(new CANNON.Vec3(150,25,50));
+    mass = 1;
+	    
+    	bodybox1 = new CANNON.Body({ mass: 1 });
+		bodybox1.addShape(shape);
+		bodybox1.angularDamping = 0.5;
+		
+		bodybox2 = new CANNON.Body({ mass: 1 });
+		bodybox2.addShape(shape);
+		bodybox2.angularDamping = 0.5;
+		
+		bodybox3 = new CANNON.Body({ mass: 1 });
+		bodybox3.addShape(shape);
+		bodybox3.angularDamping = 0.5;
+		
+		bodybox4 = new CANNON.Body({ mass: 1 });
+		bodybox4.addShape(shape);
+		bodybox4.angularDamping = 0.5;
+		
+		bodybox5 = new CANNON.Body({ mass: 1 });
+		bodybox5.addShape(shape);
+		bodybox5.angularDamping = 0.5;
+		
+		bodybox6 = new CANNON.Body({ mass: 1 });
+		bodybox6.addShape(shape);
+		bodybox6.angularDamping = 0.5;
+		
+		bodybox7 = new CANNON.Body({ mass: 1 });
+		bodybox7.addShape(shape);
+		bodybox7.angularDamping = 0.5;
+		
+		bodybox8 = new CANNON.Body({ mass: 1 });
+		bodybox8.addShape(shape);
+		bodybox8.angularDamping = 0.5;
+		
+		bodybox9 = new CANNON.Body({ mass: 1 });
+		bodybox9.addShape(shape);
+		bodybox9.angularDamping = 0.5;
+		
+		bodybox10 = new CANNON.Body({ mass: 1 });
+		bodybox10.addShape(shape);
+		bodybox10.angularDamping = 0.5;
+		
+		bodybox11 = new CANNON.Body({ mass: 1 });
+		bodybox11.addShape(shape);
+		bodybox11.angularDamping = 0.5;
+		
+		bodybox12 = new CANNON.Body({ mass: 1 });
+		bodybox12.addShape(shape);
+		bodybox12.angularDamping = 0.5;
+		
+		bodybox13 = new CANNON.Body({ mass: 1 });
+		bodybox13.addShape(shape);
+		bodybox13.angularDamping = 0.5;
+		
+		bodybox14 = new CANNON.Body({ mass: 1 });
+		bodybox14.addShape(shape);
+		bodybox14.angularDamping = 0.5;
+		
+		bodybox15 = new CANNON.Body({ mass: 1 });
+		bodybox15.addShape(shape);
+		bodybox15.angularDamping = 0.5;
+		
+		bodybox16 = new CANNON.Body({ mass: 1 });
+		bodybox16.addShape(shape);
+		bodybox16.angularDamping = 0.5;
+		
+		bodybox17 = new CANNON.Body({ mass: 1 });
+		bodybox17.addShape(shape);
+		bodybox17.angularDamping = 0.5;
+		
+		bodybox18 = new CANNON.Body({ mass: 1 });
+		bodybox18.addShape(shape);
+		bodybox18.angularDamping = 0.5;
+		
+		bodybox19 = new CANNON.Body({ mass: 1 });
+		bodybox19.addShape(shape);
+		bodybox19.angularDamping = 0.5;
+		
+		bodybox20 = new CANNON.Body({ mass: 1 });
+		bodybox20.addShape(shape);
+		bodybox20.angularDamping = 0.5;
+		
+		bodybox21 = new CANNON.Body({ mass: 1 });
+		bodybox21.addShape(shape);
+		bodybox21.angularDamping = 0.5;
+		
+		bodybox22 = new CANNON.Body({ mass: 1 });
+		bodybox22.addShape(shape);
+		bodybox22.angularDamping = 0.5;
+		
+		bodybox23 = new CANNON.Body({ mass: 1 });
+		bodybox23.addShape(shape);
+		bodybox23.angularDamping = 0.5;
+		
+		bodybox24 = new CANNON.Body({ mass: 1 });
+		bodybox24.addShape(shape);
+		bodybox24.angularDamping = 0.5;
+		
+		bodybox25 = new CANNON.Body({ mass: 1 });
+		bodybox25.addShape(shape);
+		bodybox25.angularDamping = 0.5;
+		
+		bodybox26 = new CANNON.Body({ mass: 1 });
+		bodybox26.addShape(shape);
+		bodybox26.angularDamping = 0.5;
+		
+		bodybox27 = new CANNON.Body({ mass: 1 });
+		bodybox27.addShape(shape);
+		bodybox27.angularDamping = 0.5;
+		
+		bodybox28 = new CANNON.Body({ mass: 1 });
+		bodybox28.addShape(shape);
+		bodybox28.angularDamping = 0.5;
+		
+		bodybox29 = new CANNON.Body({ mass: 1 });
+		bodybox29.addShape(shape);
+		bodybox29.angularDamping = 0.5;
+		
+		bodybox30 = new CANNON.Body({ mass: 1 });
+		bodybox30.addShape(shape);
+		bodybox30.angularDamping = 0.5;
+		
+		bodybox31 = new CANNON.Body({ mass: 1 });
+		bodybox31.addShape(shape);
+		bodybox31.angularDamping = 0.5;
+		
+		bodybox32 = new CANNON.Body({ mass: 1 });
+		bodybox32.addShape(shape);
+		bodybox32.angularDamping = 0.5;
+		
+		bodybox33 = new CANNON.Body({ mass: 1 });
+		bodybox33.addShape(shape);
+		bodybox33.angularDamping = 0.5;
+		
+		bodybox34 = new CANNON.Body({ mass: 1 });
+		bodybox34.addShape(shape);
+		bodybox34.angularDamping = 0.5;
+		
+		bodybox35 = new CANNON.Body({ mass: 1 });
+		bodybox35.addShape(shape);
+		bodybox35.angularDamping = 0.5;
+		
+		bodybox36 = new CANNON.Body({ mass: 1 });
+		bodybox36.addShape(shape);
+		bodybox36.angularDamping = 0.5;
+		
+		world.addBody(bodybox1);
+		world.addBody(bodybox2);
+		world.addBody(bodybox3);
+		world.addBody(bodybox4);
+		world.addBody(bodybox5);
+		world.addBody(bodybox6);
+		world.addBody(bodybox7);
+		world.addBody(bodybox8);
+		world.addBody(bodybox9);
+		world.addBody(bodybox10);
+		world.addBody(bodybox11);
+		world.addBody(bodybox12);
+		world.addBody(bodybox13);
+		world.addBody(bodybox14);
+		world.addBody(bodybox15);
+		world.addBody(bodybox16);
+		world.addBody(bodybox17);
+		world.addBody(bodybox18);
+		world.addBody(bodybox19);
+		world.addBody(bodybox20);
+		world.addBody(bodybox21);
+		world.addBody(bodybox22);
+		world.addBody(bodybox23);
+		world.addBody(bodybox24);
+		world.addBody(bodybox25);
+		world.addBody(bodybox26);
+		world.addBody(bodybox27);
+		world.addBody(bodybox28);
+		world.addBody(bodybox29);
+		world.addBody(bodybox30);
+		world.addBody(bodybox31);
+		world.addBody(bodybox32);
+		world.addBody(bodybox33);
+		world.addBody(bodybox34);
+		world.addBody(bodybox35);
+		world.addBody(bodybox36);
+}
+
+// Add Event Listeners
+
+button.addEventListener('cursordown', function(e){
+	console.log("reset");
+});
+
+sim.scene.addEventListener('cursordown', function(e){
+	selectedbox = e.target.name;
+	getbody(selectedbox);
+	localmove = true;
+	boxsel = true;
+});
+
+sim.scene.addEventListener('cursorup', function(e){
+	selectedbox = null;
+	localmove = false;
+	boxsel = false;
+	fbboxsel.set({
+				initiator: "null"
+			});
+});
+
+fbboxsel.on("value", function(snapshot) {
+	var value = snapshot.val();
+	if (value.initiator != userid){
+		boxsel = true;
+		selectedbox = value.name;
+		getbody(selectedbox);
+	}
+	if (value.initiator == "null"){
+		boxsel = false;
+	}
+});
+
+// Set Timers
+var tid = setInterval(animate, 10);
+var tid2 = setInterval(firebasesync, 1000);
+
+// Loops
+
+function animate(){
+	world.step(timeStep);
+	updatePhysics();
+}
+
+function updatePhysics(){
+	if (gamestate == true){
+	if (boxsel == true){
+		if (localmove == true){
+			selectedbody.position.copy(sim.scene.getObjectByName(selectedbox).position);
+			fbboxsel.set({
+				initiator: userid,
+				name: selectedbox,
+				angvel: selectedbody.angularVelocity,
+				linvel: selectedbody.velocity,
+				pos: selectedbody.position,
+				rot: selectedbody.quaternion
+			});
+		}
+		else {
+			fbboxsel.once("value", function(snapshot) {
+			var value = snapshot.val();
+			selectedbody.angularVelocity.copy(value.angvel);
+			selectedbody.velocity.copy(value.linvel);
+			selectedbody.position.copy(value.pos);
+			selectedbody.quaternion.copy(value.rot);
+			});
+		}
+	}
+	box1.position.copy(bodybox1.position);
+	box2.position.copy(bodybox2.position);
+	box3.position.copy(bodybox3.position);
+	box4.position.copy(bodybox4.position);
+	box5.position.copy(bodybox5.position);
+	box6.position.copy(bodybox6.position);
+	box7.position.copy(bodybox7.position);
+	box8.position.copy(bodybox8.position);
+	box9.position.copy(bodybox9.position);
+	box10.position.copy(bodybox10.position);
+	box11.position.copy(bodybox11.position);
+	box12.position.copy(bodybox12.position);
+	box13.position.copy(bodybox13.position);
+	box14.position.copy(bodybox14.position);
+	box15.position.copy(bodybox15.position);
+	box16.position.copy(bodybox16.position);
+	box17.position.copy(bodybox17.position);
+	box18.position.copy(bodybox18.position);
+	box19.position.copy(bodybox19.position);
+	box20.position.copy(bodybox20.position);
+	box21.position.copy(bodybox21.position);
+	box22.position.copy(bodybox22.position);
+	box23.position.copy(bodybox23.position);
+	box24.position.copy(bodybox24.position);
+	box25.position.copy(bodybox25.position);
+	box26.position.copy(bodybox26.position);
+	box27.position.copy(bodybox27.position);
+	box28.position.copy(bodybox28.position);
+	box29.position.copy(bodybox29.position);
+	box30.position.copy(bodybox30.position);
+	box31.position.copy(bodybox31.position);
+	box32.position.copy(bodybox32.position);
+	box33.position.copy(bodybox33.position);
+	box34.position.copy(bodybox34.position);
+	box35.position.copy(bodybox35.position);
+	box36.position.copy(bodybox36.position);
+	box1.quaternion.copy(bodybox1.quaternion);
+	box2.quaternion.copy(bodybox2.quaternion);
+	box3.quaternion.copy(bodybox3.quaternion);
+	box4.quaternion.copy(bodybox4.quaternion);
+	box5.quaternion.copy(bodybox5.quaternion);
+	box6.quaternion.copy(bodybox6.quaternion);
+	box7.quaternion.copy(bodybox7.quaternion);
+	box8.quaternion.copy(bodybox8.quaternion);
+	box9.quaternion.copy(bodybox9.quaternion);
+	box10.quaternion.copy(bodybox10.quaternion);
+	box11.quaternion.copy(bodybox11.quaternion);
+	box12.quaternion.copy(bodybox12.quaternion);
+	box13.quaternion.copy(bodybox13.quaternion);
+	box14.quaternion.copy(bodybox14.quaternion);
+	box15.quaternion.copy(bodybox15.quaternion);
+	box16.quaternion.copy(bodybox16.quaternion);
+	box17.quaternion.copy(bodybox17.quaternion);
+	box18.quaternion.copy(bodybox18.quaternion);
+	box19.quaternion.copy(bodybox19.quaternion);
+	box20.quaternion.copy(bodybox20.quaternion);
+	box21.quaternion.copy(bodybox21.quaternion);
+	box22.quaternion.copy(bodybox22.quaternion);
+	box23.quaternion.copy(bodybox23.quaternion);
+	box24.quaternion.copy(bodybox24.quaternion);
+	box25.quaternion.copy(bodybox25.quaternion);
+	box26.quaternion.copy(bodybox26.quaternion);
+	box27.quaternion.copy(bodybox27.quaternion);
+	box28.quaternion.copy(bodybox28.quaternion);
+	box29.quaternion.copy(bodybox29.quaternion);
+	box30.quaternion.copy(bodybox30.quaternion);
+	box31.quaternion.copy(bodybox31.quaternion);
+	box32.quaternion.copy(bodybox32.quaternion);
+	box33.quaternion.copy(bodybox33.quaternion);
+	box34.quaternion.copy(bodybox34.quaternion);
+	box35.quaternion.copy(bodybox35.quaternion);
+	box36.quaternion.copy(bodybox36.quaternion);
+	//floor.position.copy(groundbody.position);
+	//floor.quaternion.copy(groundbody.quaternion);
+	}
+}
+
+function firebasesync(){
+	if (gamestate == true){
+	if (client == "master"){
+		fbbox1.set({ angvel: bodybox1.angularVelocity, linvel: bodybox1.velocity, pos: bodybox1.position, rot: bodybox1.quaternion });
+		fbbox2.set({ angvel: bodybox2.angularVelocity, linvel: bodybox2.velocity, pos: bodybox2.position, rot: bodybox2.quaternion });
+		fbbox3.set({ angvel: bodybox3.angularVelocity, linvel: bodybox3.velocity, pos: bodybox3.position, rot: bodybox3.quaternion });
+		fbbox4.set({ angvel: bodybox4.angularVelocity, linvel: bodybox4.velocity, pos: bodybox4.position, rot: bodybox4.quaternion });
+		fbbox5.set({ angvel: bodybox5.angularVelocity, linvel: bodybox5.velocity, pos: bodybox5.position, rot: bodybox5.quaternion });
+		fbbox6.set({ angvel: bodybox6.angularVelocity, linvel: bodybox6.velocity, pos: bodybox6.position, rot: bodybox6.quaternion });
+		fbbox7.set({ angvel: bodybox7.angularVelocity, linvel: bodybox7.velocity, pos: bodybox7.position, rot: bodybox7.quaternion });
+		fbbox8.set({ angvel: bodybox8.angularVelocity, linvel: bodybox8.velocity, pos: bodybox8.position, rot: bodybox8.quaternion });
+		fbbox9.set({ angvel: bodybox9.angularVelocity, linvel: bodybox9.velocity, pos: bodybox9.position, rot: bodybox9.quaternion });
+		fbbox10.set({ angvel: bodybox10.angularVelocity, linvel: bodybox10.velocity, pos: bodybox10.position, rot: bodybox10.quaternion });
+		fbbox11.set({ angvel: bodybox11.angularVelocity, linvel: bodybox11.velocity, pos: bodybox11.position, rot: bodybox11.quaternion });
+		fbbox12.set({ angvel: bodybox12.angularVelocity, linvel: bodybox12.velocity, pos: bodybox12.position, rot: bodybox12.quaternion });
+		fbbox13.set({ angvel: bodybox13.angularVelocity, linvel: bodybox13.velocity, pos: bodybox13.position, rot: bodybox13.quaternion });
+		fbbox14.set({ angvel: bodybox14.angularVelocity, linvel: bodybox14.velocity, pos: bodybox14.position, rot: bodybox14.quaternion });
+		fbbox15.set({ angvel: bodybox15.angularVelocity, linvel: bodybox15.velocity, pos: bodybox15.position, rot: bodybox15.quaternion });
+		fbbox16.set({ angvel: bodybox16.angularVelocity, linvel: bodybox16.velocity, pos: bodybox16.position, rot: bodybox16.quaternion });
+		fbbox17.set({ angvel: bodybox17.angularVelocity, linvel: bodybox17.velocity, pos: bodybox17.position, rot: bodybox17.quaternion });
+		fbbox18.set({ angvel: bodybox18.angularVelocity, linvel: bodybox18.velocity, pos: bodybox18.position, rot: bodybox18.quaternion });
+		fbbox19.set({ angvel: bodybox19.angularVelocity, linvel: bodybox19.velocity, pos: bodybox19.position, rot: bodybox19.quaternion });
+		fbbox20.set({ angvel: bodybox20.angularVelocity, linvel: bodybox20.velocity, pos: bodybox20.position, rot: bodybox20.quaternion });
+		fbbox21.set({ angvel: bodybox21.angularVelocity, linvel: bodybox21.velocity, pos: bodybox21.position, rot: bodybox21.quaternion });
+		fbbox22.set({ angvel: bodybox22.angularVelocity, linvel: bodybox22.velocity, pos: bodybox22.position, rot: bodybox22.quaternion });
+		fbbox23.set({ angvel: bodybox23.angularVelocity, linvel: bodybox23.velocity, pos: bodybox23.position, rot: bodybox23.quaternion });
+		fbbox24.set({ angvel: bodybox24.angularVelocity, linvel: bodybox24.velocity, pos: bodybox24.position, rot: bodybox24.quaternion });
+		fbbox25.set({ angvel: bodybox25.angularVelocity, linvel: bodybox25.velocity, pos: bodybox25.position, rot: bodybox25.quaternion });
+		fbbox26.set({ angvel: bodybox26.angularVelocity, linvel: bodybox26.velocity, pos: bodybox26.position, rot: bodybox26.quaternion });
+		fbbox27.set({ angvel: bodybox27.angularVelocity, linvel: bodybox27.velocity, pos: bodybox27.position, rot: bodybox27.quaternion });
+		fbbox28.set({ angvel: bodybox28.angularVelocity, linvel: bodybox28.velocity, pos: bodybox28.position, rot: bodybox28.quaternion });
+		fbbox29.set({ angvel: bodybox29.angularVelocity, linvel: bodybox29.velocity, pos: bodybox29.position, rot: bodybox29.quaternion });
+		fbbox30.set({ angvel: bodybox30.angularVelocity, linvel: bodybox30.velocity, pos: bodybox30.position, rot: bodybox30.quaternion });
+		fbbox31.set({ angvel: bodybox31.angularVelocity, linvel: bodybox31.velocity, pos: bodybox31.position, rot: bodybox31.quaternion });
+		fbbox32.set({ angvel: bodybox32.angularVelocity, linvel: bodybox32.velocity, pos: bodybox32.position, rot: bodybox32.quaternion });
+		fbbox33.set({ angvel: bodybox33.angularVelocity, linvel: bodybox33.velocity, pos: bodybox33.position, rot: bodybox33.quaternion });
+		fbbox34.set({ angvel: bodybox34.angularVelocity, linvel: bodybox34.velocity, pos: bodybox34.position, rot: bodybox34.quaternion });
+		fbbox35.set({ angvel: bodybox35.angularVelocity, linvel: bodybox35.velocity, pos: bodybox35.position, rot: bodybox35.quaternion });
+		fbbox36.set({ angvel: bodybox36.angularVelocity, linvel: bodybox36.velocity, pos: bodybox36.position, rot: bodybox36.quaternion });
+		}
+	else {
+		fbbox1.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox1.angularVelocity.copy(value.angvel);
+			bodybox1.velocity.copy(value.linvel);
+			bodybox1.position.copy(value.pos);
+			bodybox1.quaternion.copy(value.rot);
+			});
+		fbbox2.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox2.angularVelocity.copy(value.angvel);
+			bodybox2.velocity.copy(value.linvel);
+			bodybox2.position.copy(value.pos);
+			bodybox2.quaternion.copy(value.rot);
+			});	
+		fbbox3.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox3.angularVelocity.copy(value.angvel);
+			bodybox3.velocity.copy(value.linvel);
+			bodybox3.position.copy(value.pos);
+			bodybox3.quaternion.copy(value.rot);
+			});	
+		fbbox4.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox4.angularVelocity.copy(value.angvel);
+			bodybox4.velocity.copy(value.linvel);
+			bodybox4.position.copy(value.pos);
+			bodybox4.quaternion.copy(value.rot);
+			});	
+		fbbox5.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox5.angularVelocity.copy(value.angvel);
+			bodybox5.velocity.copy(value.linvel);
+			bodybox5.position.copy(value.pos);
+			bodybox5.quaternion.copy(value.rot);
+			});	
+		fbbox6.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox6.angularVelocity.copy(value.angvel);
+			bodybox6.velocity.copy(value.linvel);
+			bodybox6.position.copy(value.pos);
+			bodybox6.quaternion.copy(value.rot);
+			});
+		fbbox7.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox7.angularVelocity.copy(value.angvel);
+			bodybox7.velocity.copy(value.linvel);
+			bodybox7.position.copy(value.pos);
+			bodybox7.quaternion.copy(value.rot);
+			});
+		fbbox8.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox8.angularVelocity.copy(value.angvel);
+			bodybox8.velocity.copy(value.linvel);
+			bodybox8.position.copy(value.pos);
+			bodybox8.quaternion.copy(value.rot);
+			});
+		fbbox9.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox9.angularVelocity.copy(value.angvel);
+			bodybox9.velocity.copy(value.linvel);
+			bodybox9.position.copy(value.pos);
+			bodybox9.quaternion.copy(value.rot);
+			});
+		fbbox10.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox10.angularVelocity.copy(value.angvel);
+			bodybox10.velocity.copy(value.linvel);
+			bodybox10.position.copy(value.pos);
+			bodybox10.quaternion.copy(value.rot);
+			});
+		fbbox11.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox11.angularVelocity.copy(value.angvel);
+			bodybox11.velocity.copy(value.linvel);
+			bodybox11.position.copy(value.pos);
+			bodybox11.quaternion.copy(value.rot);
+			});	
+		fbbox12.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox12.angularVelocity.copy(value.angvel);
+			bodybox12.velocity.copy(value.linvel);
+			bodybox12.position.copy(value.pos);
+			bodybox12.quaternion.copy(value.rot);
+			});	
+		fbbox13.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox13.angularVelocity.copy(value.angvel);
+			bodybox13.velocity.copy(value.linvel);
+			bodybox13.position.copy(value.pos);
+			bodybox13.quaternion.copy(value.rot);
+			});	
+		fbbox14.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox14.angularVelocity.copy(value.angvel);
+			bodybox14.velocity.copy(value.linvel);
+			bodybox14.position.copy(value.pos);
+			bodybox14.quaternion.copy(value.rot);
+			});	
+		fbbox15.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox15.angularVelocity.copy(value.angvel);
+			bodybox15.velocity.copy(value.linvel);
+			bodybox15.position.copy(value.pos);
+			bodybox15.quaternion.copy(value.rot);
+			});	
+		fbbox16.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox16.angularVelocity.copy(value.angvel);
+			bodybox16.velocity.copy(value.linvel);
+			bodybox16.position.copy(value.pos);
+			bodybox16.quaternion.copy(value.rot);
+			});
+		fbbox17.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox17.angularVelocity.copy(value.angvel);
+			bodybox17.velocity.copy(value.linvel);
+			bodybox17.position.copy(value.pos);
+			bodybox17.quaternion.copy(value.rot);
+			});
+		fbbox18.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox18.angularVelocity.copy(value.angvel);
+			bodybox18.velocity.copy(value.linvel);
+			bodybox18.position.copy(value.pos);
+			bodybox18.quaternion.copy(value.rot);
+			});
+		fbbox19.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox19.angularVelocity.copy(value.angvel);
+			bodybox19.velocity.copy(value.linvel);
+			bodybox19.position.copy(value.pos);
+			bodybox19.quaternion.copy(value.rot);
+			});
+		fbbox20.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox20.angularVelocity.copy(value.angvel);
+			bodybox20.velocity.copy(value.linvel);
+			bodybox20.position.copy(value.pos);
+			bodybox20.quaternion.copy(value.rot);
+			});
+		fbbox21.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox21.angularVelocity.copy(value.angvel);
+			bodybox21.velocity.copy(value.linvel);
+			bodybox21.position.copy(value.pos);
+			bodybox21.quaternion.copy(value.rot);
+			});	
+		fbbox22.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox22.angularVelocity.copy(value.angvel);
+			bodybox22.velocity.copy(value.linvel);
+			bodybox22.position.copy(value.pos);
+			bodybox22.quaternion.copy(value.rot);
+			});	
+		fbbox23.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox23.angularVelocity.copy(value.angvel);
+			bodybox23.velocity.copy(value.linvel);
+			bodybox23.position.copy(value.pos);
+			bodybox23.quaternion.copy(value.rot);
+			});	
+		fbbox24.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox24.angularVelocity.copy(value.angvel);
+			bodybox24.velocity.copy(value.linvel);
+			bodybox24.position.copy(value.pos);
+			bodybox24.quaternion.copy(value.rot);
+			});	
+		fbbox25.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox25.angularVelocity.copy(value.angvel);
+			bodybox25.velocity.copy(value.linvel);
+			bodybox25.position.copy(value.pos);
+			bodybox25.quaternion.copy(value.rot);
+			});	
+		fbbox26.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox26.angularVelocity.copy(value.angvel);
+			bodybox26.velocity.copy(value.linvel);
+			bodybox26.position.copy(value.pos);
+			bodybox26.quaternion.copy(value.rot);
+			});
+		fbbox27.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox27.angularVelocity.copy(value.angvel);
+			bodybox27.velocity.copy(value.linvel);
+			bodybox27.position.copy(value.pos);
+			bodybox27.quaternion.copy(value.rot);
+			});
+		fbbox28.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox28.angularVelocity.copy(value.angvel);
+			bodybox28.velocity.copy(value.linvel);
+			bodybox28.position.copy(value.pos);
+			bodybox28.quaternion.copy(value.rot);
+			});
+		fbbox29.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox29.angularVelocity.copy(value.angvel);
+			bodybox29.velocity.copy(value.linvel);
+			bodybox29.position.copy(value.pos);
+			bodybox29.quaternion.copy(value.rot);
+			});
+		fbbox30.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox30.angularVelocity.copy(value.angvel);
+			bodybox30.velocity.copy(value.linvel);
+			bodybox30.position.copy(value.pos);
+			bodybox30.quaternion.copy(value.rot);
+			});
+		fbbox31.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox31.angularVelocity.copy(value.angvel);
+			bodybox31.velocity.copy(value.linvel);
+			bodybox31.position.copy(value.pos);
+			bodybox31.quaternion.copy(value.rot);
+			});	
+		fbbox32.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox32.angularVelocity.copy(value.angvel);
+			bodybox32.velocity.copy(value.linvel);
+			bodybox32.position.copy(value.pos);
+			bodybox32.quaternion.copy(value.rot);
+			});	
+		fbbox33.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox33.angularVelocity.copy(value.angvel);
+			bodybox33.velocity.copy(value.linvel);
+			bodybox33.position.copy(value.pos);
+			bodybox33.quaternion.copy(value.rot);
+			});	
+		fbbox34.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox34.angularVelocity.copy(value.angvel);
+			bodybox34.velocity.copy(value.linvel);
+			bodybox34.position.copy(value.pos);
+			bodybox34.quaternion.copy(value.rot);
+			});	
+		fbbox35.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox35.angularVelocity.copy(value.angvel);
+			bodybox35.velocity.copy(value.linvel);
+			bodybox35.position.copy(value.pos);
+			bodybox35.quaternion.copy(value.rot);
+			});	
+		fbbox36.once("value", function(snapshot) {
+			var value = snapshot.val();
+			bodybox36.angularVelocity.copy(value.angvel);
+			bodybox36.velocity.copy(value.linvel);
+			bodybox36.position.copy(value.pos);
+			bodybox36.quaternion.copy(value.rot);
+			});
+		}
+	}
+}
+	
+function getbody(name){
+	switch (name) {
+		case "box1":
+			selectedbody = bodybox1;
+			break;
+		case "box2":
+			selectedbody = bodybox2;
+			break;
+		case "box3":
+			selectedbody = bodybox3;
+			break;
+		case "box4":
+			selectedbody = bodybox4;
+			break;
+		case "box5":
+			selectedbody = bodybox5;
+			break;
+		case "box6":
+			selectedbody = bodybox6;
+			break;
+		case "box7":
+			selectedbody = bodybox7;
+			break;
+		case "box8":
+			selectedbody = bodybox8;
+			break;
+		case "box9":
+			selectedbody = bodybox9;
+			break;
+		case "box10":
+			selectedbody = bodybox10;
+			break;
+		case "box11":
+			selectedbody = bodybox11;
+			break;
+		case "box12":
+			selectedbody = bodybox12;
+			break;
+		case "box13":
+			selectedbody = bodybox13;
+			break;
+		case "box14":
+			selectedbody = bodybox14;
+			break;
+		case "box15":
+			selectedbody = bodybox15;
+			break;
+		case "box16":
+			selectedbody = bodybox16;
+			break;
+		case "box17":
+			selectedbody = bodybox17;
+			break;
+		case "box18":
+			selectedbody = bodybox18;
+			break;
+		case "box19":
+			selectedbody = bodybox19;
+			break;
+		case "box20":
+			selectedbody = bodybox20;
+			break;
+		case "box21":
+			selectedbody = bodybox21;
+			break;
+		case "box22":
+			selectedbody = bodybox22;
+			break;
+		case "box23":
+			selectedbody = bodybox23;
+			break;
+		case "box24":
+			selectedbody = bodybox24;
+			break;
+		case "box25":
+			selectedbody = bodybox25;
+			break;
+		case "box26":
+			selectedbody = bodybox26;
+			break;
+		case "box27":
+			selectedbody = bodybox27;
+			break;
+		case "box28":
+			selectedbody = bodybox28;
+			break;
+		case "box29":
+			selectedbody = bodybox29;
+			break;
+		case "box30":
+			selectedbody = bodybox30;
+			break;
+		case "box31":
+			selectedbody = bodybox31;
+			break;
+		case "box32":
+			selectedbody = bodybox32;
+			break;
+		case "box33":
+			selectedbody = bodybox33;
+			break;
+		case "box34":
+			selectedbody = bodybox34;
+			break;
+		case "box35":
+			selectedbody = bodybox35;
+			break;
+		case "box36":
+			selectedbody = bodybox36;
+			break;
+		default:
+			selectedbody = null;
+	}
+}
+
+});
+
+});
+
+</script>
+</body>
+</html>
+
