@@ -34,6 +34,7 @@ var localmove;
 var spaceid;
 var userid;
 var fbref;
+var gamestate;
 var myFirebaseRef = new Firebase("https://blinding-fire-3702.firebaseio.com");
 
 // Initialise Firebase Session
@@ -88,17 +89,24 @@ var fbbox35 = fbref.child('box35');
 var fbbox36 = fbref.child('box36');
 
 // Firebase First Check
-var gamestate = fbref.child('gamestate');
+var fbgamestate = fbref.child('gamestate');
+var masterid = fbref.child('masterid');
 
-if(gamestate == true){
+fbgamestate.once("value", function(snapshot) {
+	var value = snapshot.val();
+	gamestate = value;
+});
+
+if( gamestate == "true"){
 	client = "slave";
 }
-else if( gamestate == false){
+else if( gamestate == "false"){
 	client = "null";
 }
 else {
 	client = "slave";
-	gamestate.set(false);
+	fbgamestate.set("false");
+	console.log(gamestate);
 	fbboxsel.set({ initiator: "null" });
 }
 
@@ -112,7 +120,10 @@ var url2 = 'images/refresh_icon_sq.png';
 var texture = materialCreator.loadTexture(url);
 var button_texture = materialCreator.loadTexture(url2);
 
+add_objects();
+
 //Add THREE.JS Objects
+function add_objects(){
 for (i = 0; i < layers; i++) {
 	
 	var initbox1 = new THREE.Mesh(
@@ -195,42 +206,42 @@ for (i = 0; i < layers; i++) {
 	sim.scene.add(initbox6);
 }
 
-var box1 = sim.scene.getObjectByName("box1");
-var box2 = sim.scene.getObjectByName("box2");
-var box3 = sim.scene.getObjectByName("box3");
-var box4 = sim.scene.getObjectByName("box4");
-var box5 = sim.scene.getObjectByName("box5");
-var box6 = sim.scene.getObjectByName("box6");
-var box7 = sim.scene.getObjectByName("box7");
-var box8 = sim.scene.getObjectByName("box8");
-var box9 = sim.scene.getObjectByName("box9");
-var box10 = sim.scene.getObjectByName("box10");
-var box11 = sim.scene.getObjectByName("box11");
-var box12 = sim.scene.getObjectByName("box12");
-var box13 = sim.scene.getObjectByName("box13");
-var box14 = sim.scene.getObjectByName("box14");
-var box15 = sim.scene.getObjectByName("box15");
-var box16 = sim.scene.getObjectByName("box16");
-var box17 = sim.scene.getObjectByName("box17");
-var box18 = sim.scene.getObjectByName("box18");
-var box19 = sim.scene.getObjectByName("box19");
-var box20 = sim.scene.getObjectByName("box20");
-var box21 = sim.scene.getObjectByName("box21");
-var box22 = sim.scene.getObjectByName("box22");
-var box23 = sim.scene.getObjectByName("box23");
-var box24 = sim.scene.getObjectByName("box24");
-var box25 = sim.scene.getObjectByName("box25");
-var box26 = sim.scene.getObjectByName("box26");
-var box27 = sim.scene.getObjectByName("box27");
-var box28 = sim.scene.getObjectByName("box28");
-var box29 = sim.scene.getObjectByName("box29");
-var box30 = sim.scene.getObjectByName("box30");
-var box31 = sim.scene.getObjectByName("box31");
-var box32 = sim.scene.getObjectByName("box32");
-var box33 = sim.scene.getObjectByName("box33");
-var box34 = sim.scene.getObjectByName("box34");
-var box35 = sim.scene.getObjectByName("box35");
-var box36 = sim.scene.getObjectByName("box36");
+box1 = sim.scene.getObjectByName("box1");
+box2 = sim.scene.getObjectByName("box2");
+box3 = sim.scene.getObjectByName("box3");
+box4 = sim.scene.getObjectByName("box4");
+box5 = sim.scene.getObjectByName("box5");
+box6 = sim.scene.getObjectByName("box6");
+box7 = sim.scene.getObjectByName("box7");
+box8 = sim.scene.getObjectByName("box8");
+box9 = sim.scene.getObjectByName("box9");
+box10 = sim.scene.getObjectByName("box10");
+box11 = sim.scene.getObjectByName("box11");
+box12 = sim.scene.getObjectByName("box12");
+box13 = sim.scene.getObjectByName("box13");
+box14 = sim.scene.getObjectByName("box14");
+box15 = sim.scene.getObjectByName("box15");
+box16 = sim.scene.getObjectByName("box16");
+box17 = sim.scene.getObjectByName("box17");
+box18 = sim.scene.getObjectByName("box18");
+box19 = sim.scene.getObjectByName("box19");
+box20 = sim.scene.getObjectByName("box20");
+box21 = sim.scene.getObjectByName("box21");
+box22 = sim.scene.getObjectByName("box22");
+box23 = sim.scene.getObjectByName("box23");
+box24 = sim.scene.getObjectByName("box24");
+box25 = sim.scene.getObjectByName("box25");
+box26 = sim.scene.getObjectByName("box26");
+box27 = sim.scene.getObjectByName("box27");
+box28 = sim.scene.getObjectByName("box28");
+box29 = sim.scene.getObjectByName("box29");
+box30 = sim.scene.getObjectByName("box30");
+box31 = sim.scene.getObjectByName("box31");
+box32 = sim.scene.getObjectByName("box32");
+box33 = sim.scene.getObjectByName("box33");
+box34 = sim.scene.getObjectByName("box34");
+box35 = sim.scene.getObjectByName("box35");
+box36 = sim.scene.getObjectByName("box36");
 
 bodybox1.position.copy(box1.position);
 bodybox2.position.copy(box2.position);
@@ -304,6 +315,7 @@ bodybox33.quaternion.copy(box33.quaternion);
 bodybox34.quaternion.copy(box34.quaternion);
 bodybox35.quaternion.copy(box35.quaternion);
 bodybox36.quaternion.copy(box36.quaternion);
+}
 
 var floor = new THREE.Mesh(
 	new THREE.BoxGeometry(1000, 2, 1000),
@@ -325,7 +337,7 @@ sim.scene.add(button);
 
 function initCannon() {
     world = new CANNON.World();
-    world.gravity.set(0,-60,0);
+    world.gravity.set(0,-90,0);
     world.broadphase = new CANNON.NaiveBroadphase();
     world.solver.iterations = 10;
     
@@ -340,149 +352,149 @@ function initCannon() {
     shape = new CANNON.Box(new CANNON.Vec3(150,25,50));
     mass = 1;
 	    
-    	bodybox1 = new CANNON.Body({ mass: 1 });
+    	bodybox1 = new CANNON.Body({ mass: 10 });
 		bodybox1.addShape(shape);
-		bodybox1.angularDamping = 0.5;
+		//bodybox1.angularDamping = 0.5;
 		
-		bodybox2 = new CANNON.Body({ mass: 1 });
+		bodybox2 = new CANNON.Body({ mass: 10 });
 		bodybox2.addShape(shape);
-		bodybox2.angularDamping = 0.5;
+		//bodybox2.angularDamping = 0.5;
 		
-		bodybox3 = new CANNON.Body({ mass: 1 });
+		bodybox3 = new CANNON.Body({ mass: 10 });
 		bodybox3.addShape(shape);
-		bodybox3.angularDamping = 0.5;
+		//bodybox3.angularDamping = 0.5;
 		
-		bodybox4 = new CANNON.Body({ mass: 1 });
+		bodybox4 = new CANNON.Body({ mass: 10 });
 		bodybox4.addShape(shape);
-		bodybox4.angularDamping = 0.5;
+		//bodybox4.angularDamping = 0.5;
 		
-		bodybox5 = new CANNON.Body({ mass: 1 });
+		bodybox5 = new CANNON.Body({ mass: 10 });
 		bodybox5.addShape(shape);
-		bodybox5.angularDamping = 0.5;
+		//bodybox5.angularDamping = 0.5;
 		
-		bodybox6 = new CANNON.Body({ mass: 1 });
+		bodybox6 = new CANNON.Body({ mass: 10 });
 		bodybox6.addShape(shape);
-		bodybox6.angularDamping = 0.5;
+		//bodybox6.angularDamping = 0.5;
 		
-		bodybox7 = new CANNON.Body({ mass: 1 });
+		bodybox7 = new CANNON.Body({ mass: 10 });
 		bodybox7.addShape(shape);
-		bodybox7.angularDamping = 0.5;
+		//bodybox7.angularDamping = 0.5;
 		
-		bodybox8 = new CANNON.Body({ mass: 1 });
+		bodybox8 = new CANNON.Body({ mass: 10 });
 		bodybox8.addShape(shape);
-		bodybox8.angularDamping = 0.5;
+		//bodybox8.angularDamping = 0.5;
 		
-		bodybox9 = new CANNON.Body({ mass: 1 });
+		bodybox9 = new CANNON.Body({ mass: 10 });
 		bodybox9.addShape(shape);
-		bodybox9.angularDamping = 0.5;
+		//bodybox9.angularDamping = 0.5;
 		
-		bodybox10 = new CANNON.Body({ mass: 1 });
+		bodybox10 = new CANNON.Body({ mass: 10 });
 		bodybox10.addShape(shape);
-		bodybox10.angularDamping = 0.5;
+		//bodybox10.angularDamping = 0.5;
 		
-		bodybox11 = new CANNON.Body({ mass: 1 });
+		bodybox11 = new CANNON.Body({ mass: 10 });
 		bodybox11.addShape(shape);
-		bodybox11.angularDamping = 0.5;
+		//bodybox11.angularDamping = 0.5;
 		
-		bodybox12 = new CANNON.Body({ mass: 1 });
+		bodybox12 = new CANNON.Body({ mass: 10 });
 		bodybox12.addShape(shape);
-		bodybox12.angularDamping = 0.5;
+		//bodybox12.angularDamping = 0.5;
 		
-		bodybox13 = new CANNON.Body({ mass: 1 });
+		bodybox13 = new CANNON.Body({ mass: 10 });
 		bodybox13.addShape(shape);
-		bodybox13.angularDamping = 0.5;
+		//bodybox13.angularDamping = 0.5;
 		
-		bodybox14 = new CANNON.Body({ mass: 1 });
+		bodybox14 = new CANNON.Body({ mass: 10 });
 		bodybox14.addShape(shape);
-		bodybox14.angularDamping = 0.5;
+		//bodybox14.angularDamping = 0.5;
 		
-		bodybox15 = new CANNON.Body({ mass: 1 });
+		bodybox15 = new CANNON.Body({ mass: 10 });
 		bodybox15.addShape(shape);
-		bodybox15.angularDamping = 0.5;
+		//bodybox15.angularDamping = 0.5;
 		
-		bodybox16 = new CANNON.Body({ mass: 1 });
+		bodybox16 = new CANNON.Body({ mass: 10 });
 		bodybox16.addShape(shape);
-		bodybox16.angularDamping = 0.5;
+		//bodybox16.angularDamping = 0.5;
 		
-		bodybox17 = new CANNON.Body({ mass: 1 });
+		bodybox17 = new CANNON.Body({ mass: 10 });
 		bodybox17.addShape(shape);
-		bodybox17.angularDamping = 0.5;
+		//bodybox17.angularDamping = 0.5;
 		
-		bodybox18 = new CANNON.Body({ mass: 1 });
+		bodybox18 = new CANNON.Body({ mass: 10 });
 		bodybox18.addShape(shape);
-		bodybox18.angularDamping = 0.5;
+		//bodybox18.angularDamping = 0.5;
 		
-		bodybox19 = new CANNON.Body({ mass: 1 });
+		bodybox19 = new CANNON.Body({ mass: 10 });
 		bodybox19.addShape(shape);
-		bodybox19.angularDamping = 0.5;
+		//bodybox19.angularDamping = 0.5;
 		
-		bodybox20 = new CANNON.Body({ mass: 1 });
+		bodybox20 = new CANNON.Body({ mass: 10 });
 		bodybox20.addShape(shape);
-		bodybox20.angularDamping = 0.5;
+		//bodybox20.angularDamping = 0.5;
 		
-		bodybox21 = new CANNON.Body({ mass: 1 });
+		bodybox21 = new CANNON.Body({ mass: 10 });
 		bodybox21.addShape(shape);
-		bodybox21.angularDamping = 0.5;
+		//bodybox21.angularDamping = 0.5;
 		
-		bodybox22 = new CANNON.Body({ mass: 1 });
+		bodybox22 = new CANNON.Body({ mass: 10 });
 		bodybox22.addShape(shape);
-		bodybox22.angularDamping = 0.5;
+		//bodybox22.angularDamping = 0.5;
 		
-		bodybox23 = new CANNON.Body({ mass: 1 });
+		bodybox23 = new CANNON.Body({ mass: 10 });
 		bodybox23.addShape(shape);
-		bodybox23.angularDamping = 0.5;
+		//bodybox23.angularDamping = 0.5;
 		
-		bodybox24 = new CANNON.Body({ mass: 1 });
+		bodybox24 = new CANNON.Body({ mass: 10 });
 		bodybox24.addShape(shape);
-		bodybox24.angularDamping = 0.5;
+		//bodybox24.angularDamping = 0.5;
 		
-		bodybox25 = new CANNON.Body({ mass: 1 });
+		bodybox25 = new CANNON.Body({ mass: 10 });
 		bodybox25.addShape(shape);
-		bodybox25.angularDamping = 0.5;
+		//bodybox25.angularDamping = 0.5;
 		
-		bodybox26 = new CANNON.Body({ mass: 1 });
+		bodybox26 = new CANNON.Body({ mass: 10 });
 		bodybox26.addShape(shape);
-		bodybox26.angularDamping = 0.5;
+		//bodybox26.angularDamping = 0.5;
 		
-		bodybox27 = new CANNON.Body({ mass: 1 });
+		bodybox27 = new CANNON.Body({ mass: 10 });
 		bodybox27.addShape(shape);
-		bodybox27.angularDamping = 0.5;
+		//bodybox27.angularDamping = 0.5;
 		
-		bodybox28 = new CANNON.Body({ mass: 1 });
+		bodybox28 = new CANNON.Body({ mass: 10 });
 		bodybox28.addShape(shape);
-		bodybox28.angularDamping = 0.5;
+		//bodybox28.angularDamping = 0.5;
 		
-		bodybox29 = new CANNON.Body({ mass: 1 });
+		bodybox29 = new CANNON.Body({ mass: 10 });
 		bodybox29.addShape(shape);
-		bodybox29.angularDamping = 0.5;
+		//bodybox29.angularDamping = 0.5;
 		
-		bodybox30 = new CANNON.Body({ mass: 1 });
+		bodybox30 = new CANNON.Body({ mass: 10 });
 		bodybox30.addShape(shape);
-		bodybox30.angularDamping = 0.5;
+		//bodybox30.angularDamping = 0.5;
 		
-		bodybox31 = new CANNON.Body({ mass: 1 });
+		bodybox31 = new CANNON.Body({ mass: 10 });
 		bodybox31.addShape(shape);
-		bodybox31.angularDamping = 0.5;
+		//bodybox31.angularDamping = 0.5;
 		
-		bodybox32 = new CANNON.Body({ mass: 1 });
+		bodybox32 = new CANNON.Body({ mass: 10 });
 		bodybox32.addShape(shape);
-		bodybox32.angularDamping = 0.5;
+		//bodybox32.angularDamping = 0.5;
 		
-		bodybox33 = new CANNON.Body({ mass: 1 });
+		bodybox33 = new CANNON.Body({ mass: 10 });
 		bodybox33.addShape(shape);
-		bodybox33.angularDamping = 0.5;
+		//bodybox33.angularDamping = 0.5;
 		
-		bodybox34 = new CANNON.Body({ mass: 1 });
+		bodybox34 = new CANNON.Body({ mass: 10 });
 		bodybox34.addShape(shape);
-		bodybox34.angularDamping = 0.5;
+		//bodybox34.angularDamping = 0.5;
 		
-		bodybox35 = new CANNON.Body({ mass: 1 });
+		bodybox35 = new CANNON.Body({ mass: 10 });
 		bodybox35.addShape(shape);
-		bodybox35.angularDamping = 0.5;
+		//bodybox35.angularDamping = 0.5;
 		
-		bodybox36 = new CANNON.Body({ mass: 1 });
+		bodybox36 = new CANNON.Body({ mass: 10 });
 		bodybox36.addShape(shape);
-		bodybox36.angularDamping = 0.5;
+		//bodybox36.angularDamping = 0.5;
 		
 		world.addBody(bodybox1);
 		world.addBody(bodybox2);
@@ -522,10 +534,61 @@ function initCannon() {
 		world.addBody(bodybox36);
 }
 
+//Remove objects for reset
+function remove_objects(){
+	height = -472;
+	boxname = 1;
+	sim.scene.remove(box1);
+	sim.scene.remove(box2);
+	sim.scene.remove(box3);
+	sim.scene.remove(box4);
+	sim.scene.remove(box5);
+	sim.scene.remove(box6);
+	sim.scene.remove(box7);
+	sim.scene.remove(box8);
+	sim.scene.remove(box9);
+	sim.scene.remove(box10);
+	sim.scene.remove(box11);
+	sim.scene.remove(box12);
+	sim.scene.remove(box13);
+	sim.scene.remove(box14);
+	sim.scene.remove(box15);
+	sim.scene.remove(box16);
+	sim.scene.remove(box17);
+	sim.scene.remove(box18);
+	sim.scene.remove(box19);
+	sim.scene.remove(box20);
+	sim.scene.remove(box21);
+	sim.scene.remove(box22);
+	sim.scene.remove(box23);
+	sim.scene.remove(box24);
+	sim.scene.remove(box25);
+	sim.scene.remove(box26);
+	sim.scene.remove(box27);
+	sim.scene.remove(box28);
+	sim.scene.remove(box29);
+	sim.scene.remove(box30);
+	sim.scene.remove(box31);
+	sim.scene.remove(box32);
+	sim.scene.remove(box33);
+	sim.scene.remove(box34);
+	sim.scene.remove(box35);
+	sim.scene.remove(box36);
+}
+
 // Add Event Listeners
 
 button.addEventListener('cursordown', function(e){
+	gamestate = "false";
+	fbgamestate.set("false");
 	console.log("reset");
+	client = "master";
+	masterid.set(userid);
+	remove_objects();
+	initCannon();
+	add_objects();
+	fbgamestate.set("true");
+	fbboxsel.set({ initiator: "null" });
 });
 
 sim.scene.addEventListener('cursordown', function(e){
@@ -542,6 +605,24 @@ sim.scene.addEventListener('cursorup', function(e){
 	fbboxsel.set({
 				initiator: "null"
 			});
+});
+
+fbgamestate.on("value", function(snapshot) {
+	var value = snapshot.val();
+	gamestate = value;
+	console.log("gamestate changed");
+});
+
+masterid.on("value", function(snapshot) {
+	var value = snapshot.val();
+	console.log("master id changed!");
+	gamestate = fbref.child('gamestate');
+	if (value != userid){
+		client = "slave";
+	}
+	else {
+		client = "master";
+	}
 });
 
 fbboxsel.on("value", function(snapshot) {
@@ -561,14 +642,13 @@ var tid = setInterval(animate, 10);
 var tid2 = setInterval(firebasesync, 1000);
 
 // Loops
-
 function animate(){
 	world.step(timeStep);
 	updatePhysics();
 }
 
 function updatePhysics(){
-	if (gamestate == true){
+	if (gamestate == "true"){
 	if (boxsel == true){
 		if (localmove == true){
 			selectedbody.position.copy(sim.scene.getObjectByName(selectedbox).position);
@@ -669,7 +749,7 @@ function updatePhysics(){
 }
 
 function firebasesync(){
-	if (gamestate == true){
+	if (gamestate == "true"){
 	if (client == "master"){
 		fbbox1.set({ angvel: bodybox1.angularVelocity, linvel: bodybox1.velocity, pos: bodybox1.position, rot: bodybox1.quaternion });
 		fbbox2.set({ angvel: bodybox2.angularVelocity, linvel: bodybox2.velocity, pos: bodybox2.position, rot: bodybox2.quaternion });
